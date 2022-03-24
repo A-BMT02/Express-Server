@@ -1,91 +1,61 @@
-const Jou = require("joi") ; 
 const express = require("express") ; 
-const Joi = require("joi");
+const bodyParser = require("body-parser") ; 
 
 const app = express() ; 
 
-app.use(express.json());
+app.use(bodyParser.urlencoded({extended: false})) ; 
+app.use(bodyParser.json()) ; 
+app.listen(4000 , () => console.log("server is running")) ;
 
-const courses = [
+let data = [
     { id : 1 , name : "Ahmad"} , 
-    { id : 2 , name : "Dave"} , 
-    { id : 3 , name : "Mo"} 
+    { id : 2 , name : "Mo"} , 
+    { id : 3 , name : "Dave"} , 
 ]
 
-app.get("/" ,  (req , res) => {
-res.send("Hello") ; 
+app.get("/" , (req , res) => {
+    res.send(data) ;
 })
 
-app.get("/api/courses" , (req , res) => {
-res.send(courses) ; 
-})
-
-app.post("/api/courses" , (req , res) => {
-
-  const { error } = validateCourse(req.body) ;
-      if(error) {
-        res.status(400).send(error.details[0].message) ;
-        return ; 
-    }
-
-    const course = {
-        id : courses.length + 1 , 
-        name : req.body.name
-    } ; 
-    courses.push(course) ;
-
-    res.send(course) ; 
-})
-
-app.get("/api/courses/:id" , (req , res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id)) ; 
-    if(!course) {
-        res.status(404).send("The course is not found") ;
+app.get("/:id" , (req , res) => {
+    const item = data.filter(data => data.id === parseInt(req.params.id)) ; 
+    if(item.length !== 0) {
+        res.send(item) ; 
     } else {
-        res.send(course) ; 
+        res.send("item not found") ; 
     }
-
 })
 
-app.put("/api/courses/:id" , (req , res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id)) ; 
-    if(!course) {
-        res.status(404).send("The course is not found") ;
-        return ;
-    } 
+app.post("/" , (req ,res) => {
+    data.push(req.body) ; 
+    console.log(req.body) ;
+    res.send(data) ; 
+})
 
-    const { error } = validateCourse(req.body) ;
-      if(error) {
-        res.status(400).send(error.details[0].message) ;
-        return ; 
-    }
+app.put("/:id" , (req ,res) => {
+    const target = data.filter(data => data.id === parseInt(req.params.id))[0] ; 
+    data = data.map(item => {
+        if(item.id == target.id) {
+             item = {
+                id : req.body.id ? parseInt(req.body.id) : item.id , 
+                name : req.body.name ? req.body.name : item.name , 
+            }
+            console.log(item) ;
+            return item ;
+        }
+        return item;
 
-    course.name = req.body.name ; 
-    res.send(course) ;
-}) 
+    })
+        res.send(data) ; 
 
-
-function validateCourse(course) {
-    const schema = {
-        name : Joi.string().min(3).required()
-    }
     
-    return Joi.validate(course , schema) ; 
-}
+})
 
+app.delete("/:id" , (req , res) => {
+    const target = data.filter(data => data.id === parseInt(req.params.id))[0] ; 
+    data = data.filter(item => {
+        return item.id !== target.id ;
+    })
 
-app.delete("/api/courses/:id" , (req , res) => {
-    const course = courses.find(c => c.id === parseInt(req.params.id)) ; 
-    if(!course) {
-        res.status(404).send("The course is not found") ;
-    } 
-
-    const index = courses.indexOf(course) ;
-    courses.splice(index , 1) ; 
-    res.send(course) ;
-}) 
-    
-
-
-
-app.listen(3000 , () => console.log("server running") ) ;  
+    res.send(data) ; 
+})
