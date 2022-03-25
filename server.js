@@ -5,7 +5,7 @@ const app = express() ;
 
 app.use(bodyParser.urlencoded({extended: false})) ; 
 app.use(bodyParser.json()) ; 
-app.listen(4000 , () => console.log("server is running")) ;
+app.listen(4000 , () => console.log("Server is running")) ;
 
 let data = [
     { id : 1 , name : "Ahmad"} , 
@@ -22,7 +22,7 @@ app.get("/:id" , (req , res) => {
     if(item.length !== 0) {
         res.send(item) ; 
     } else {
-        res.send("item not found") ; 
+        res.send("Item not found") ; 
     }
 })
 
